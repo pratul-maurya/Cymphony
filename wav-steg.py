@@ -2,9 +2,9 @@ import getopt, os, sys, math, struct, wave
 
 def print_usage():
     print("\nUsage options:\n",
-        "-h, --hide     The script runs to hide data\n",
-        "-r, --recover  The script runs to recover data\n",
-        "-s, --sound    Write name of carrier wav file\n",
+        "-h, --hide     The script runs to hide data in the audio file\n",
+        "-r, --recover  The script runs to recover data from the steg audio file\n",
+        "-s, --sound    Write name of your carrier wav file\n",
         "-d, --data     Write file name having data to hide\n",
         "-o, --output   Output filename of your choice\n",
         "-n, --nlsb     Number of LSBs you want to use\n",
@@ -149,15 +149,13 @@ def recover_data(sound_path, output_path, num_lsb, bytes_to_recover):
         
         next_sample = raw_data[sound_index]
         if (next_sample != smallest_byte):
-            # Since we skipped samples with the minimum possible value when
-            # hiding data, we do the same here.
+            # Since we skipped samples with the minimum possible value when hiding data, we do the same here when recovering data.
             buffer += (abs(next_sample) & mask) << buffer_length
             buffer_length += num_lsb
         sound_index += 1
         
         while (buffer_length >= 8 and bytes_to_recover > 0):
-            # If we have more than a byte in the buffer, add it to data
-            # and decrement the number of bytes left to recover.
+            # If we have more than one byte left in the buffer, add it to data and decrement the number of bytes left to recover from the file.
             current_data = buffer % (1 << 8)
             buffer >>= 8
             buffer_length -= 8
