@@ -9,14 +9,14 @@ def print_usage():
         "-o, --output   Output filename of your choice\n",
         "-n, --nlsb     Number of LSBs you want to use\n",
         "-b, --bytes    Number of bytes to recover from sound file\n"
-        " --help         Display help\n")
+        " --help        Display help i.e. all the available options\n")
 
 def prepare(sound_path):
     global sound, params, n_frames, n_samples, fmt, mask, smallest_byte
     sound = wave.open(sound_path, "r")
     
     params = sound.getparams()
-    num_channels = sound.getnchannels() #Returns number of audio channels (1 for mono, 2 for stereo).
+    num_channels = sound.getnchannels() #Returns number of audio channels- 1 for mono, 2 for stereo
     sample_width = sound.getsampwidth() #Returns sample width in bytes.
     n_frames = sound.getnframes() #Returns number of audio frames.
     n_samples = n_frames * num_channels
@@ -25,8 +25,7 @@ def prepare(sound_path):
         fmt = "{}B".format(n_samples)
         # Used to set the least significant num_lsb bits of an integer to zero
         mask = (1 << 8) - (1 << num_lsb)
-        # The least possible value for a sample in the sound file is actually
-        # zero, but we don't skip any samples for 8 bit depth wav files.
+        # The least possible value for a sample in the sound file is actually zero, but we don't skip any samples for 8 bit depth wav files.
         smallest_byte = -(1 << 8)
     elif (sample_width == 2):  # samples are signed 16-bit integers
         fmt = "{}h".format(n_samples)
@@ -35,7 +34,7 @@ def prepare(sound_path):
         # The least possible value for a sample in the sound file
         smallest_byte = -(1 << 15)
     else:
-        # Python's wave module doesn't support higher sample widths from some reason
+        # Python's wave module doesn't support higher sample widths from a reason we weren't able to figure out as of now
         raise ValueError("File has an unsupported bit-depth")
 
 def hide_data(sound_path, file_path, output_path, num_lsb):
@@ -60,7 +59,7 @@ def hide_data(sound_path, file_path, output_path, num_lsb):
     
     input_data = memoryview(open(file_path, "rb").read())
     
-    # The number of bits we've processed from the input file
+    # The number of bits the we processed from the input file
     data_index = 0
     sound_index = 0
     
@@ -72,8 +71,7 @@ def hide_data(sound_path, file_path, output_path, num_lsb):
     
     while(not done):
         while (buffer_length < num_lsb and data_index // 8 < len(input_data)):
-            # If we don't have enough data in the buffer, add the
-            # rest of the next byte from the file to it.
+            # If we don't have enough data in the buffer, add the rest of the next byte from the file to it.
             buffer += (input_data[data_index // 8] >> (data_index % 8)
                         ) << buffer_length
             bits_added = 8 - (data_index % 8)
